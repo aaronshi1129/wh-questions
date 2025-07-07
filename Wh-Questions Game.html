@@ -1,0 +1,709 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wh-Questions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .draggable {
+            cursor: grab;
+            user-select: none;
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        .droppable {
+            transition: all 0.2s ease;
+        }
+        .droppable.highlight {
+            background-color: #e0f2fe !important;
+            transform: scale(1.02);
+        }
+        .warning {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .success-animation {
+            animation: success-pulse 0.5s;
+        }
+        @keyframes success-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .shuffle-animation {
+            animation: shuffle 0.8s ease-in-out;
+        }
+        @keyframes shuffle {
+            0% { transform: translateX(0) translateY(0) rotate(0deg); }
+            25% { transform: translateX(10px) translateY(-10px) rotate(5deg); }
+            50% { transform: translateX(-5px) translateY(5px) rotate(-3deg); }
+            75% { transform: translateX(5px) translateY(-5px) rotate(2deg); }
+            100% { transform: translateX(0) translateY(0) rotate(0deg); }
+        }
+        .main-content {
+            flex: 1;
+        }
+        footer {
+            margin-top: auto;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .pop-in {
+            animation: popIn 0.3s;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .nav-tab {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .nav-tab.active {
+            color: #4f46e5;
+            font-weight: bold;
+        }
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #4f46e5;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content container mx-auto px-4 py-8 max-w-6xl">
+        <h1 class="text-3xl font-bold text-center text-indigo-700 mb-2">Wh-Questions</h1>
+        <p class="text-center text-gray-600 mb-4">Learn and practice Wh-questions in English</p>
+        
+        <!-- Navigation Tabs -->
+        <div class="flex justify-center mb-8">
+            <div class="bg-white rounded-lg shadow-md p-1 inline-flex">
+                <button id="tab-matching" class="nav-tab active px-6 py-3 rounded-md" onclick="showPage('matching-page')">
+                    Matching Game
+                </button>
+                <button id="tab-transformation" class="nav-tab px-6 py-3 rounded-md" onclick="showPage('transformation-page')">
+                    Sentence Transformation
+                </button>
+            </div>
+        </div>
+        
+        <!-- Matching Game Page -->
+        <div id="matching-page" class="page active">
+            <div class="flex flex-col md:flex-row gap-8 mb-8">
+                <!-- Game area -->
+                <div class="w-full md:w-2/3 bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex flex-wrap justify-center gap-4 mb-8" id="wh-words-container">
+                        <div class="wh-word draggable bg-purple-200 p-4 rounded-lg shadow-md text-center font-bold text-gray-800 w-32 h-16 flex items-center justify-center" draggable="true" data-name="What">What</div>
+                        <div class="wh-word draggable bg-blue-200 p-4 rounded-lg shadow-md text-center font-bold text-gray-800 w-32 h-16 flex items-center justify-center" draggable="true" data-name="Where">Where</div>
+                        <div class="wh-word draggable bg-green-200 p-4 rounded-lg shadow-md text-center font-bold text-gray-800 w-32 h-16 flex items-center justify-center" draggable="true" data-name="When">When</div>
+                        <div class="wh-word draggable bg-yellow-200 p-4 rounded-lg shadow-md text-center font-bold text-gray-800 w-32 h-16 flex items-center justify-center" draggable="true" data-name="Who">Who</div>
+                        <div class="wh-word draggable bg-red-200 p-4 rounded-lg shadow-md text-center font-bold text-gray-800 w-32 h-16 flex items-center justify-center" draggable="true" data-name="Why">Why</div>
+                        <div class="wh-word draggable bg-pink-200 p-4 rounded-lg shadow-md text-center font-bold text-gray-800 w-32 h-16 flex items-center justify-center" draggable="true" data-name="How">How</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="droppable bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300 min-h-[120px] flex flex-col items-center justify-center" data-expects="What">
+                            <p class="text-gray-600 text-center mb-2">Used to ask about things or information</p>
+                            <p class="text-gray-500 text-sm text-center">用於詢問事物或資訊</p>
+                            <div class="drop-placeholder w-full h-16 mt-2"></div>
+                        </div>
+                        <div class="droppable bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300 min-h-[120px] flex flex-col items-center justify-center" data-expects="Where">
+                            <p class="text-gray-600 text-center mb-2">Used to ask about places or locations</p>
+                            <p class="text-gray-500 text-sm text-center">用於詢問地點或位置</p>
+                            <div class="drop-placeholder w-full h-16 mt-2"></div>
+                        </div>
+                        <div class="droppable bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300 min-h-[120px] flex flex-col items-center justify-center" data-expects="When">
+                            <p class="text-gray-600 text-center mb-2">Used to ask about time</p>
+                            <p class="text-gray-500 text-sm text-center">用於詢問時間</p>
+                            <div class="drop-placeholder w-full h-16 mt-2"></div>
+                        </div>
+                        <div class="droppable bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300 min-h-[120px] flex flex-col items-center justify-center" data-expects="Who">
+                            <p class="text-gray-600 text-center mb-2">Used to ask about people</p>
+                            <p class="text-gray-500 text-sm text-center">用於詢問人物</p>
+                            <div class="drop-placeholder w-full h-16 mt-2"></div>
+                        </div>
+                        <div class="droppable bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300 min-h-[120px] flex flex-col items-center justify-center" data-expects="Why">
+                            <p class="text-gray-600 text-center mb-2">Used to ask about reasons</p>
+                            <p class="text-gray-500 text-sm text-center">用於詢問原因</p>
+                            <div class="drop-placeholder w-full h-16 mt-2"></div>
+                        </div>
+                        <div class="droppable bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300 min-h-[120px] flex flex-col items-center justify-center" data-expects="How">
+                            <p class="text-gray-600 text-center mb-2">Used to ask about manner or method</p>
+                            <p class="text-gray-500 text-sm text-center">用於詢問方式或方法</p>
+                            <div class="drop-placeholder w-full h-16 mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sidebar with score and examples -->
+                <div class="w-full md:w-1/3 flex flex-col gap-4">
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-xl font-bold text-indigo-700 mb-4">Score</h2>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Correct:</span>
+                            <span id="correct-count" class="text-green-600 font-bold text-xl">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Attempts:</span>
+                            <span id="attempts-count" class="text-blue-600 font-bold text-xl">0</span>
+                        </div>
+                        <div class="mt-4">
+                            <button id="reset-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                Reset Game
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-xl font-bold text-indigo-700 mb-4">Example Sentences</h2>
+                        <div id="example-container" class="space-y-3">
+                            <p class="text-gray-600">Drag a Wh-word to see example sentences</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-xl font-bold text-indigo-700 mb-4">Practice</h2>
+                        <div id="practice-container" class="mb-4">
+                            <p class="text-gray-600 mb-2">Complete all matches to unlock practice questions!</p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sentence Transformation Page -->
+        <div id="transformation-page" class="page">
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                <h2 class="text-2xl font-bold text-indigo-700 mb-4">Sentence Transformation</h2>
+                <p class="text-gray-600 mb-6">Transform these statements into Wh-questions</p>
+                
+                <div id="transformation-container" class="space-y-6">
+                    <div class="transformation-item bg-gray-50 p-4 rounded-lg">
+                        <p class="text-gray-700 mb-2"><strong>Statement:</strong> <span class="statement-text">John lives in New York.</span></p>
+                        <p class="text-gray-500 mb-3 text-sm">提示：詢問關於人 (Who)</p>
+                        
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" class="transform-input border border-gray-300 rounded-lg px-3 py-2 flex-grow" 
+                                placeholder="Type your Wh-question here..." 
+                                data-answer="Who lives in New York?">
+                            <button class="check-transform-btn bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">
+                                Check
+                            </button>
+                        </div>
+                        <p class="transform-feedback mt-2 hidden"></p>
+                        <div class="mt-3 hidden transform-hint">
+                            <button class="hint-btn text-indigo-600 text-sm hover:text-indigo-800">Need a hint?</button>
+                            <p class="hint-text hidden text-sm text-gray-600 mt-1">Replace "John" with "Who" and keep the rest of the sentence structure.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="transformation-item bg-gray-50 p-4 rounded-lg">
+                        <p class="text-gray-700 mb-2"><strong>Statement:</strong> <span class="statement-text">She went to the store yesterday.</span></p>
+                        <p class="text-gray-500 mb-3 text-sm">提示：詢問關於地點 (Where)</p>
+                        
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" class="transform-input border border-gray-300 rounded-lg px-3 py-2 flex-grow" 
+                                placeholder="Type your Wh-question here..." 
+                                data-answer="Where did she go yesterday?">
+                            <button class="check-transform-btn bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">
+                                Check
+                            </button>
+                        </div>
+                        <p class="transform-feedback mt-2 hidden"></p>
+                        <div class="mt-3 hidden transform-hint">
+                            <button class="hint-btn text-indigo-600 text-sm hover:text-indigo-800">Need a hint?</button>
+                            <p class="hint-text hidden text-sm text-gray-600 mt-1">Use "Where" + "did" + subject + base verb form.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="transformation-item bg-gray-50 p-4 rounded-lg">
+                        <p class="text-gray-700 mb-2"><strong>Statement:</strong> <span class="statement-text">They are studying because they have an exam.</span></p>
+                        <p class="text-gray-500 mb-3 text-sm">提示：詢問關於原因 (Why)</p>
+                        
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" class="transform-input border border-gray-300 rounded-lg px-3 py-2 flex-grow" 
+                                placeholder="Type your Wh-question here..." 
+                                data-answer="Why are they studying?">
+                            <button class="check-transform-btn bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">
+                                Check
+                            </button>
+                        </div>
+                        <p class="transform-feedback mt-2 hidden"></p>
+                        <div class="mt-3 hidden transform-hint">
+                            <button class="hint-btn text-indigo-600 text-sm hover:text-indigo-800">Need a hint?</button>
+                            <p class="hint-text hidden text-sm text-gray-600 mt-1">Start with "Why" and keep the subject-verb structure from the original sentence.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="transformation-item bg-gray-50 p-4 rounded-lg">
+                        <p class="text-gray-700 mb-2"><strong>Statement:</strong> <span class="statement-text">The concert starts at 8 PM.</span></p>
+                        <p class="text-gray-500 mb-3 text-sm">提示：詢問關於時間 (When)</p>
+                        
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" class="transform-input border border-gray-300 rounded-lg px-3 py-2 flex-grow" 
+                                placeholder="Type your Wh-question here..." 
+                                data-answer="When does the concert start?">
+                            <button class="check-transform-btn bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">
+                                Check
+                            </button>
+                        </div>
+                        <p class="transform-feedback mt-2 hidden"></p>
+                        <div class="mt-3 hidden transform-hint">
+                            <button class="hint-btn text-indigo-600 text-sm hover:text-indigo-800">Need a hint?</button>
+                            <p class="hint-text hidden text-sm text-gray-600 mt-1">Use "When" + "does" + subject + base verb form.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex justify-between">
+                    <button id="reset-transform-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">
+                        Reset All
+                    </button>
+                    <button onclick="showPage('matching-page')" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                        ← Back to Matching Game
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-indigo-800 text-indigo-100 py-6 mt-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0">
+                <!-- Links -->
+                <div class="flex items-center space-x-4">
+                    <a href="https://www.aaronshi.cc" target="_blank" rel="noopener noreferrer" class="flex items-center hover:text-white transition duration-300">
+                        Go to AaronShi.cc
+                    </a>
+                    <span class="text-indigo-300">|</span>
+                    <a href="https://app.aaronshi.cc" target="_blank" rel="noopener noreferrer" class="flex items-center hover:text-white transition duration-300">
+                        Back to AaronShi.cc App
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let dragged = null;
+            let correctMatches = 0;
+            let attempts = 0;
+            const totalQuestions = 6;
+            
+            // Store original HTML of the wh-words container for reset
+            const originalWhWordsContainer = document.getElementById('wh-words-container').innerHTML;
+            
+            // Example sentences for each Wh-word
+            const examples = {
+                'What': [
+                    'What is your name?',
+                    'What do you like to eat?',
+                    'What are you doing tomorrow?'
+                ],
+                'Where': [
+                    'Where do you live?',
+                    'Where is the nearest station?',
+                    'Where are you going for vacation?'
+                ],
+                'When': [
+                    'When is your birthday?',
+                    'When does the movie start?',
+                    'When will you arrive?'
+                ],
+                'Who': [
+                    'Who is your best friend?',
+                    'Who wrote this book?',
+                    'Who will help me with this project?'
+                ],
+                'Why': [
+                    'Why are you studying English?',
+                    'Why did you choose this school?',
+                    'Why is the sky blue?'
+                ],
+                'How': [
+                    'How do you make sushi?',
+                    'How are you feeling today?',
+                    'How did you solve this problem?'
+                ]
+            };
+            
+            // Practice questions
+            const practiceQuestions = [
+                { question: "_____ is your favorite movie?", answer: "What" },
+                { question: "_____ are you going on vacation?", answer: "Where" },
+                { question: "_____ is your English class?", answer: "When" },
+                { question: "_____ is your English teacher?", answer: "Who" },
+                { question: "_____ are you learning English?", answer: "Why" },
+                { question: "_____ do you get to school?", answer: "How" }
+            ];
+            
+            // Set up drag and drop functionality
+            setupDragAndDrop();
+            
+            function setupDragAndDrop() {
+                const draggables = document.querySelectorAll('.draggable');
+                const dropZones = document.querySelectorAll('.droppable');
+                
+                draggables.forEach(draggable => {
+                    draggable.addEventListener('dragstart', function(e) {
+                        dragged = this;
+                        setTimeout(() => {
+                            this.classList.add('opacity-50');
+                        }, 0);
+                        
+                        // Show examples for the dragged word
+                        showExamples(this.dataset.name);
+                    });
+                    
+                    draggable.addEventListener('dragend', function() {
+                        this.classList.remove('opacity-50');
+                    });
+                });
+                
+                dropZones.forEach(dropZone => {
+                    dropZone.addEventListener('dragover', function(e) {
+                        e.preventDefault();
+                        this.classList.add('highlight');
+                    });
+                    
+                    dropZone.addEventListener('dragleave', function() {
+                        this.classList.remove('highlight');
+                    });
+                    
+                    dropZone.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        this.classList.remove('highlight');
+                        
+                        // If this drop zone already has a word, don't allow another drop
+                        if (this.querySelector('.wh-word')) {
+                            return;
+                        }
+                        
+                        // Check if the dropped word matches the expected word
+                        if (dragged.dataset.name === this.dataset.expects) {
+                            // Correct match
+                            const placeholder = this.querySelector('.drop-placeholder');
+                            placeholder.appendChild(dragged);
+                            dragged.classList.remove('draggable');
+                            dragged.setAttribute('draggable', 'false');
+                            this.classList.add('success-animation');
+                            this.classList.add('bg-green-100');
+                            this.classList.remove('border-dashed');
+                            this.classList.add('border-solid');
+                            this.classList.add('border-green-500');
+                            
+                            correctMatches++;
+                            document.getElementById('correct-count').textContent = correctMatches;
+                            
+                            // Check if all matches are complete
+                            if (correctMatches === totalQuestions) {
+                                setTimeout(() => {
+                                    showPracticeQuestions();
+                                }, 500);
+                            }
+                        } else {
+                            // Incorrect match
+                            this.classList.add('warning');
+                            setTimeout(() => {
+                                this.classList.remove('warning');
+                            }, 500);
+                        }
+                        
+                        attempts++;
+                        document.getElementById('attempts-count').textContent = attempts;
+                    });
+                });
+            }
+            
+            // Reset button functionality
+            document.getElementById('reset-btn').addEventListener('click', resetGame);
+            
+            function resetGame() {
+                // Reset counters
+                correctMatches = 0;
+                document.getElementById('correct-count').textContent = correctMatches;
+                attempts = 0;
+                document.getElementById('attempts-count').textContent = attempts;
+                
+                // Reset drop zones
+                document.querySelectorAll('.droppable').forEach(zone => {
+                    zone.classList.remove('bg-green-100', 'border-solid', 'border-green-500');
+                    zone.classList.add('border-dashed', 'border-gray-300');
+                    
+                    const placeholder = zone.querySelector('.drop-placeholder');
+                    placeholder.innerHTML = '';
+                });
+                
+                // Reset wh-words container to original state
+                const wordsContainer = document.getElementById('wh-words-container');
+                wordsContainer.innerHTML = originalWhWordsContainer;
+                
+                // Re-setup drag and drop functionality for new elements
+                setupDragAndDrop();
+                
+                // Apply shuffle animation
+                wordsContainer.classList.add('shuffle-animation');
+                setTimeout(() => {
+                    wordsContainer.classList.remove('shuffle-animation');
+                }, 800);
+                
+                // Reset example container
+                document.getElementById('example-container').innerHTML = '<p class="text-gray-600">Drag a Wh-word to see example sentences</p>';
+                
+                // Reset practice container
+                document.getElementById('practice-container').innerHTML = '<p class="text-gray-600 mb-2">Complete all matches to unlock practice questions!</p>';
+            }
+            
+            function showExamples(whWord) {
+                const exampleContainer = document.getElementById('example-container');
+                exampleContainer.innerHTML = '';
+                
+                const title = document.createElement('h3');
+                title.className = 'font-bold text-indigo-600 mb-2';
+                title.textContent = `"${whWord}" Examples:`;
+                exampleContainer.appendChild(title);
+                
+                const list = document.createElement('ul');
+                list.className = 'space-y-2';
+                
+                examples[whWord].forEach(example => {
+                    const item = document.createElement('li');
+                    item.className = 'text-gray-700 fade-in';
+                    item.textContent = example;
+                    list.appendChild(item);
+                });
+                
+                exampleContainer.appendChild(list);
+            }
+            
+            function showPracticeQuestions() {
+                const practiceContainer = document.getElementById('practice-container');
+                practiceContainer.innerHTML = '';
+                
+                const title = document.createElement('h3');
+                title.className = 'font-bold text-green-600 mb-3';
+                title.textContent = 'Great job! Try these questions:';
+                practiceContainer.appendChild(title);
+                
+                const form = document.createElement('form');
+                form.id = 'practice-form';
+                form.className = 'space-y-4';
+                
+                // Shuffle questions
+                const shuffledQuestions = [...practiceQuestions].sort(() => Math.random() - 0.5).slice(0, 3);
+                
+                shuffledQuestions.forEach((q, index) => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'pop-in';
+                    questionDiv.style.animationDelay = `${index * 0.1}s`;
+                    
+                    const questionText = document.createElement('p');
+                    questionText.className = 'text-gray-700 mb-2';
+                    questionText.textContent = `${index + 1}. ${q.question}`;
+                    
+                    const inputGroup = document.createElement('div');
+                    inputGroup.className = 'flex gap-2';
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'border border-gray-300 rounded-lg px-3 py-2 w-full';
+                    input.placeholder = 'Type a Wh-word';
+                    input.dataset.answer = q.answer;
+                    
+                    const checkBtn = document.createElement('button');
+                    checkBtn.type = 'button';
+                    checkBtn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg';
+                    checkBtn.textContent = 'Check';
+                    checkBtn.addEventListener('click', function() {
+                        checkAnswer(input);
+                    });
+                    
+                    inputGroup.appendChild(input);
+                    inputGroup.appendChild(checkBtn);
+                    
+                    const feedback = document.createElement('p');
+                    feedback.className = 'text-sm mt-1 hidden';
+                    
+                    questionDiv.appendChild(questionText);
+                    questionDiv.appendChild(inputGroup);
+                    questionDiv.appendChild(feedback);
+                    
+                    form.appendChild(questionDiv);
+                });
+                
+                practiceContainer.appendChild(form);
+                
+                // Add a button to try the transformation exercise
+                const transformButton = document.createElement('div');
+                transformButton.className = 'mt-4 text-center';
+                transformButton.innerHTML = `
+                    <button onclick="showPage('transformation-page')" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                        Try Sentence Transformation →
+                    </button>
+                `;
+                practiceContainer.appendChild(transformButton);
+            }
+            
+            function checkAnswer(input) {
+                const userAnswer = input.value.trim().toLowerCase();
+                const correctAnswer = input.dataset.answer.toLowerCase();
+                const feedback = input.parentElement.nextElementSibling;
+                
+                feedback.classList.remove('hidden');
+                
+                if (userAnswer === correctAnswer) {
+                    feedback.textContent = '✓ Correct!';
+                    feedback.className = 'text-sm mt-1 text-green-600 font-bold';
+                    input.classList.add('border-green-500');
+                    input.classList.add('bg-green-50');
+                    input.disabled = true;
+                } else {
+                    feedback.textContent = '✗ Try again';
+                    feedback.className = 'text-sm mt-1 text-red-600';
+                    input.classList.add('border-red-500');
+                    setTimeout(() => {
+                        input.classList.remove('border-red-500');
+                    }, 1000);
+                }
+            }
+            
+            // Sentence transformation exercise functionality
+            document.querySelectorAll('.check-transform-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const inputField = this.previousElementSibling;
+                    const userAnswer = inputField.value.trim();
+                    const correctAnswer = inputField.dataset.answer;
+                    const feedbackElement = this.parentElement.nextElementSibling;
+                    const hintContainer = feedbackElement.nextElementSibling;
+                    
+                    // Show feedback
+                    feedbackElement.classList.remove('hidden');
+                    
+                    // Check if answer is correct (case insensitive)
+                    if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+                        feedbackElement.textContent = '✓ Excellent! That\'s correct.';
+                        feedbackElement.className = 'transform-feedback mt-2 text-green-600 font-bold';
+                        inputField.classList.add('border-green-500');
+                        inputField.classList.add('bg-green-50');
+                        inputField.disabled = true;
+                        hintContainer.classList.add('hidden');
+                    } else {
+                        feedbackElement.textContent = '✗ Not quite right. Try again!';
+                        feedbackElement.className = 'transform-feedback mt-2 text-red-600';
+                        inputField.classList.add('border-red-500');
+                        setTimeout(() => {
+                            inputField.classList.remove('border-red-500');
+                        }, 1000);
+                        
+                        // Show hint option
+                        hintContainer.classList.remove('hidden');
+                    }
+                });
+            });
+            
+            // Reset transformation exercise button
+            document.getElementById('reset-transform-btn').addEventListener('click', function() {
+                document.querySelectorAll('.transform-input').forEach(input => {
+                    input.value = '';
+                    input.classList.remove('border-green-500', 'bg-green-50');
+                    input.disabled = false;
+                });
+                
+                document.querySelectorAll('.transform-feedback').forEach(feedback => {
+                    feedback.classList.add('hidden');
+                });
+                
+                document.querySelectorAll('.transform-hint').forEach(hint => {
+                    hint.classList.add('hidden');
+                });
+                
+                document.querySelectorAll('.hint-text').forEach(text => {
+                    text.classList.add('hidden');
+                });
+                
+                document.querySelectorAll('.hint-btn').forEach(btn => {
+                    btn.textContent = 'Need a hint?';
+                });
+            });
+            
+            // Hint button functionality
+            document.querySelectorAll('.hint-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const hintText = this.nextElementSibling;
+                    hintText.classList.toggle('hidden');
+                    
+                    if (!hintText.classList.contains('hidden')) {
+                        this.textContent = 'Hide hint';
+                    } else {
+                        this.textContent = 'Need a hint?';
+                    }
+                });
+            });
+        });
+        
+        // Page navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show the selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update tab styling
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            if (pageId === 'matching-page') {
+                document.getElementById('tab-matching').classList.add('active');
+            } else if (pageId === 'transformation-page') {
+                document.getElementById('tab-transformation').classList.add('active');
+            }
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95a68631521ca361',t:'MTc1MTcxNDk2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
